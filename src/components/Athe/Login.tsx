@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 
-function Login() {
+interface LoginProps {
+  onSwitchToRegister: () => void;
+}
+
+function Login({ onSwitchToRegister }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '' });
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading, error: authError } = useAuth();
 
   const validateForm = () => {
     let isValid = true;
@@ -28,26 +33,16 @@ function Login() {
     return isValid;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (validateForm()) {
-      setIsLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Here you would typically make an API call to authenticate the user
-        console.log('Login attempt with:', { email, password });
-
-        // On successful login
-        alert('Login successful!');
-        // You would typically redirect the user or update app state here
+        await login(email, password);
+        setEmail('');
+        setPassword('');
       } catch (error) {
         console.error('Login failed:', error);
-        alert('Login failed. Please check your credentials and try again.');
-      } finally {
-        setIsLoading(false);
       }
     }
   };
@@ -56,7 +51,13 @@ function Login() {
     <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded shadow">
       <div className="flex border-b mb-6">
         <button className="flex-1 py-2 font-semibold border-b-2 border-black">Login</button>
-        <button className="flex-1 py-2 text-gray-500">Register</button>
+        <button
+          type="button"
+          onClick={onSwitchToRegister}
+          className="flex-1 py-2 text-gray-500 hover:text-gray-700"
+        >
+          Register
+        </button>
       </div>
       <h1 className="text-2xl font-bold mb-2">Login</h1>
       <p className="text-gray-500 mb-6">Enter your credentials to access your account</p>
@@ -91,8 +92,7 @@ function Login() {
           </div>
           {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
         </div>
-        
-
+        {authError && <p className="text-red-500 text-sm mb-4">{authError}</p>}
         <button
           type="submit"
           disabled={isLoading}

@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 
-const Register = () => {
+interface RegisterProps {
+  onSwitchToLogin: () => void;
+}
+
+const Register = ({ onSwitchToLogin }: RegisterProps) => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -12,7 +17,7 @@ const Register = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register, isLoading: isSubmitting, error: authError } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -20,7 +25,6 @@ const Register = () => {
       ...formData,
       [name]: value
     });
-    // Clear error when user types
     if (errors[name as keyof typeof errors]) {
       setErrors({
         ...errors,
@@ -65,23 +69,12 @@ const Register = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      setIsSubmitting(true);
       try {
-        // Here you would typically make an API call to register the user
-        console.log('Submitting registration data:', formData);
-
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // On success
-        alert('Registration successful!');
-        // Reset form
+        await register(formData.username, formData.email, formData.password);
+        // Reset form on success
         setFormData({ username: '', email: '', password: '' });
       } catch (error) {
         console.error('Registration failed:', error);
-        alert('Registration failed. Please try again.');
-      } finally {
-        setIsSubmitting(false);
       }
     }
   };
@@ -89,7 +82,13 @@ const Register = () => {
   return (
     <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded shadow">
       <div className="flex border-b mb-6">
-        <button className="flex-1 py-2 text-gray-500">Login</button>
+        <button
+          type="button"
+          onClick={onSwitchToLogin}
+          className="flex-1 py-2 text-gray-500 hover:text-gray-700"
+        >
+          Login
+        </button>
         <button className="flex-1 py-2 font-semibold border-b-2 border-black">Register</button>
       </div>
       <h1 className="text-2xl font-bold mb-2">Register</h1>
@@ -146,6 +145,7 @@ const Register = () => {
           {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
         </div>
 
+        {authError && <p className="text-red-500 text-sm mb-4">{authError}</p>}
         <button
           type="submit"
           disabled={isSubmitting}
