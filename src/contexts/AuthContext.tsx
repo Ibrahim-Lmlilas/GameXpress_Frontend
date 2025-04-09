@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axiosInstance from '../lib/axios';
 
 interface User {
   id: number;
@@ -47,25 +48,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/api/v1/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      localStorage.setItem('token', data.token);
-      setToken(data.token);
-      setUser(data.user);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during login');
+      const response = await axiosInstance.post('/admin/login', { email, password });
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+      setToken(token);
+      setUser(user);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'An error occurred during login');
       throw err;
     } finally {
       setIsLoading(false);
@@ -76,25 +65,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/api/v1/admin/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: username, email, password }),
+      const response = await axiosInstance.post('/admin/register', {
+        name: username,
+        email,
+        password
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      localStorage.setItem('token', data.token);
-      setToken(data.token);
-      setUser(data.user);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during registration');
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+      setToken(token);
+      setUser(user);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'An error occurred during registration');
       throw err;
     } finally {
       setIsLoading(false);
@@ -104,13 +85,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async () => {
     try {
       if (token) {
-        await fetch('http://localhost:8000/api/v1/admin/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        await axiosInstance.post('/admin/logout');
       }
     } catch (err) {
       console.error('Logout error:', err);

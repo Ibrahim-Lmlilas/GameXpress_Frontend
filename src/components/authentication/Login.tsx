@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginProps {
@@ -10,7 +10,7 @@ function Login({ onSwitchToRegister }: LoginProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '' });
-  const { login, isLoading, error: authError } = useAuth();
+  const { login, logout, isLoading, error: authError, user } = useAuth();
 
   const validateForm = () => {
     let isValid = true;
@@ -48,7 +48,15 @@ function Login({ onSwitchToRegister }: LoginProps) {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded shadow">
+    <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded shadow relative">
+      {user && (
+        <button
+          onClick={logout}
+          className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+        >
+          Logout
+        </button>
+      )}
       <div className="flex border-b mb-6">
         <button className="flex-1 py-2 font-semibold border-b-2 border-black">Login</button>
         <button
