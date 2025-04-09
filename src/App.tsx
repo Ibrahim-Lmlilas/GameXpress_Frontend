@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Login from './components/Athe/Login';
-import Register from './components/Athe/Register';
+import Login from './components/authentication/Login';
+import Register from './components/authentication/Register';
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
